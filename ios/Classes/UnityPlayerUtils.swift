@@ -99,7 +99,7 @@ var sharedApplication: UIApplication?
             self.ufw?.appController()?.window?.windowLevel = UIWindow.Level(UIWindow.Level.normal.rawValue - 1)
         }
         _isUnityLoaded = true
-        debugPrint("[UnityPlayerUtils] initUnity")
+        newPrint("[UnityPlayerUtils] initUnity")
     }
     
     // check if unity is initiallized
@@ -143,21 +143,21 @@ var sharedApplication: UIApplication?
             
             completed(controller?.rootView)
         }
-        debugPrint("[UnityPlayerUtils] createPlayer")
+        newPrint("[UnityPlayerUtils] createPlayer")
     }
     
     func registerUnityListener() {
         if self.unityIsInitiallized() {
             self.ufw?.register(self)
         }
-        debugPrint("[UnityPlayerUtils] registerUnityListener")
+        newPrint("[UnityPlayerUtils] registerUnityListener")
     }
     
     func unregisterUnityListener() {
         if self.unityIsInitiallized() {
             self.ufw?.unregisterFrameworkListener(self)
         }
-        debugPrint("[UnityPlayerUtils] unregisterUnityListener")
+        newPrint("[UnityPlayerUtils] unregisterUnityListener")
     }
     
     @objc
@@ -166,11 +166,11 @@ var sharedApplication: UIApplication?
         self.ufw = nil
         self._isUnityReady = false
         self._isUnityLoaded = false
-        debugPrint("[UnityPlayerUtils] unityDidUnload")
+        newPrint("[UnityPlayerUtils] unityDidUnload")
     }
     
     @objc func handleAppStateDidChange(notification: Notification?) {
-        debugPrint("[UnityPlayerUtils] handleAppStateDidChange notification?.name \(String(describing: notification?.name))")
+        newPrint("[UnityPlayerUtils] handleAppStateDidChange notification?.name \(String(describing: notification?.name))")
         if !self._isUnityReady {
             return
         }
@@ -196,7 +196,7 @@ var sharedApplication: UIApplication?
     
     // Listener for app lifecycle eventa
     func listenAppState() {
-        debugPrint("[UnityPlayerUtils] listenAppState")
+        newPrint("[UnityPlayerUtils] listenAppState")
         for name in [
             UIApplication.didBecomeActiveNotification,
             UIApplication.didEnterBackgroundNotification,
@@ -214,21 +214,21 @@ var sharedApplication: UIApplication?
     }
     // Pause unity player
     func pause() {
-        debugPrint("[UnityPlayerUtils] pause")
+        newPrint("[UnityPlayerUtils] pause")
         self.ufw?.pause(true)
         self._isUnityPaused = true
     }
     
     // Resume unity player
     func resume() {
-        debugPrint("[UnityPlayerUtils] resume")
+        newPrint("[UnityPlayerUtils] resume")
         self.ufw?.pause(false)
         self._isUnityPaused = false
     }
     
     // Unoad unity player
     func unload() {
-        debugPrint("[UnityPlayerUtils] unload")
+        newPrint("[UnityPlayerUtils] unload")
         self.ufw?.unloadApplication()
     }
     
@@ -242,14 +242,14 @@ var sharedApplication: UIApplication?
     
     // Quit unity player application
     func quit() {
-        debugPrint("[UnityPlayerUtils] quit")
+        newPrint("[UnityPlayerUtils] quit")
         self.ufw?.quitApplication(0)
         self._isUnityLoaded = false
     }
     
     // Post message to unity
     func postMessageToUnity(gameObject: String?, unityMethodName: String?, unityMessage: String?) {
-        debugPrint("[UnityPlayerUtils] postMessageToUnity \(String(describing: unityMethodName))")
+        newPrint("[UnityPlayerUtils] postMessageToUnity \(String(describing: unityMethodName))")
         if self.unityIsInitiallized() {
             self.ufw?.sendMessageToGO(withName: gameObject, functionName: unityMethodName, message: unityMessage)
         }
@@ -261,22 +261,22 @@ var sharedApplication: UIApplication?
     func unityMessageHandlers(_ message: UnsafePointer<Int8>?) {
         for c in globalControllers {
             if let strMsg = message {
-                debugPrint("[UnityPlayerUtils] unityMessageHandlers \(String(describing: String(utf8String: strMsg)))")
+                newPrint("[UnityPlayerUtils] unityMessageHandlers \(String(describing: String(utf8String: strMsg)))")
                 c.handleMessage(message: String(utf8String: strMsg) ?? "")
             } else {
-                debugPrint("[UnityPlayerUtils] unityMessageHandlers null")
+                newPrint("[UnityPlayerUtils] unityMessageHandlers null")
                 c.handleMessage(message: "")
             }
         }
     }
     
     func unitySceneLoadedHandlers(name: UnsafePointer<Int8>?, buildIndex: UnsafePointer<Int32>?, isLoaded: UnsafePointer<Bool>?, isValid: UnsafePointer<Bool>?) {
-        debugPrint("[UnityPlayerUtils] unitySceneLoadedHandlers")
+        newPrint("[UnityPlayerUtils] unitySceneLoadedHandlers")
         if let sceneName = name,
            let bIndex = buildIndex,
            let loaded = isLoaded,
            let valid = isValid {
-            debugPrint("[UnityPlayerUtils] unitySceneLoadedHandlers \( String(describing: String(utf8String: sceneName)))")
+            newPrint("[UnityPlayerUtils] unitySceneLoadedHandlers \( String(describing: String(utf8String: sceneName)))")
             let loadedVal = Bool((Int(bitPattern: loaded) != 0))
             let validVal = Bool((Int(bitPattern: valid) != 0))
             
@@ -290,6 +290,15 @@ var sharedApplication: UIApplication?
             for c in globalControllers {
                 c.handleSceneChangeEvent(info: addObject)
             }
+        }
+    }
+
+    func newPrint(_ message: String) {
+        debugPrint("\(message)")
+
+        for c in globalControllers {
+            var json = "{\"scene\":\"\("null")\", \"method\":\"\("print")\", \"data\":\"\(message)\"}"
+            c.handleMessage(message: message)
         }
     }
 }
