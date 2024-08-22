@@ -29,10 +29,10 @@ public func InitUnityIntegrationWithOptions(
     argc: Int32,
     argv: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>?,
     _ launchingOptions:  [UIApplication.LaunchOptionsKey: Any]?) {
-    gArgc = argc
-    gArgv = argv
-    appLaunchOpts = launchingOptions
-}
+        gArgc = argc
+        gArgv = argv
+        appLaunchOpts = launchingOptions
+    }
 /***********************************PLUGIN_ENTRY END**************************************/
 
 // Load unity framework for fisrt run
@@ -40,12 +40,12 @@ func UnityFrameworkLoad() -> UnityFramework? {
     var bundlePath: String? = nil
     bundlePath = Bundle.main.bundlePath
     bundlePath = (bundlePath ?? "") + "/Frameworks/UnityFramework.framework"
-
+    
     let bundle = Bundle(path: bundlePath ?? "")
     if bundle?.isLoaded == false {
         bundle?.load()
     }
-
+    
     return bundle?.principalClass?.getInstance()
 }
 
@@ -54,11 +54,11 @@ public var globalControllers: Array<FLTUnityWidgetController> = [FLTUnityWidgetC
 
 private var unityPlayerUtils: UnityPlayerUtils? = nil
 func GetUnityPlayerUtils() -> UnityPlayerUtils {
-
+    
     if unityPlayerUtils == nil {
         unityPlayerUtils = UnityPlayerUtils()
     }
-
+    
     return unityPlayerUtils ?? UnityPlayerUtils()
 }
 
@@ -68,9 +68,9 @@ var controller: UnityAppController?
 var sharedApplication: UIApplication?
 
 @objc protocol UnityEventListener: AnyObject {
-
+    
     func onReceiveMessage(_ message: UnsafePointer<Int8>?)
-
+    
 }
 
 @objc public class UnityPlayerUtils: UIResponder, UIApplicationDelegate, UnityFrameworkListener {
@@ -78,20 +78,20 @@ var sharedApplication: UIApplication?
     private var _isUnityPaused = false
     private var _isUnityReady = false
     private var _isUnityLoaded = false
-
+    
     func initUnity() {
         if (self.unityIsInitiallized()) {
             self.ufw?.showUnityWindow()
             return
         }
-
+        
         self.ufw = UnityFrameworkLoad()
-
+        
         self.ufw?.setDataBundleId("com.unity3d.framework")
-
+        
         registerUnityListener()
         self.ufw?.runEmbedded(withArgc: gArgc, argv: gArgv, appLaunchOpts: appLaunchOpts)
-
+        
         if self.ufw?.appController() != nil {
             controller = self.ufw?.appController()
             controller?.unityMessageHandler = self.unityMessageHandlers
@@ -99,80 +99,85 @@ var sharedApplication: UIApplication?
             self.ufw?.appController()?.window?.windowLevel = UIWindow.Level(UIWindow.Level.normal.rawValue - 1)
         }
         _isUnityLoaded = true
+        debugPrint("[UnityPlayerUtils] initUnity")
     }
-
+    
     // check if unity is initiallized
     func unityIsInitiallized() -> Bool {
         if self.ufw != nil {
             return true
         }
-
+        
         return false
     }
-
+    
     // Create new unity player
     func createPlayer(completed: @escaping (_ view: UIView?) -> Void) {
         if self.unityIsInitiallized() && self._isUnityReady {
             completed(controller?.rootView)
             return
         }
-
+        
         NotificationCenter.default.addObserver(forName: NSNotification.Name("UnityReady"), object: nil, queue: OperationQueue.main, using: { note in
             self._isUnityReady = true
             completed(controller?.rootView)
         })
-
+        
         DispatchQueue.main.async {
-//            if (sharedApplication == nil) {
-//                sharedApplication = UIApplication.shared
-//            }
-
+            //            if (sharedApplication == nil) {
+            //                sharedApplication = UIApplication.shared
+            //            }
+            
             // Always keep Flutter window on top
-//            let flutterUIWindow = sharedApplication?.keyWindow
-//            flutterUIWindow?.windowLevel = UIWindow.Level(UIWindow.Level.normal.rawValue + 1) // Always keep Flutter window in top
-//            sharedApplication?.keyWindow?.windowLevel = UIWindow.Level(UIWindow.Level.normal.rawValue + 1)
-
+            //            let flutterUIWindow = sharedApplication?.keyWindow
+            //            flutterUIWindow?.windowLevel = UIWindow.Level(UIWindow.Level.normal.rawValue + 1) // Always keep Flutter window in top
+            //            sharedApplication?.keyWindow?.windowLevel = UIWindow.Level(UIWindow.Level.normal.rawValue + 1)
+            
             self.initUnity()
-
+            
             unity_warmed_up = true
             self._isUnityReady = true
             self._isUnityLoaded = true
-
+            
             self.listenAppState()
-
+            
             completed(controller?.rootView)
         }
-
+        debugPrint("[UnityPlayerUtils] createPlayer")
     }
-
+    
     func registerUnityListener() {
         if self.unityIsInitiallized() {
             self.ufw?.register(self)
         }
+        debugPrint("[UnityPlayerUtils] registerUnityListener")
     }
-
+    
     func unregisterUnityListener() {
         if self.unityIsInitiallized() {
             self.ufw?.unregisterFrameworkListener(self)
         }
+        debugPrint("[UnityPlayerUtils] unregisterUnityListener")
     }
-
+    
     @objc
     public func unityDidUnload(_ notification: Notification!) {
         unregisterUnityListener()
         self.ufw = nil
         self._isUnityReady = false
         self._isUnityLoaded = false
+        debugPrint("[UnityPlayerUtils] unityDidUnload")
     }
-
+    
     @objc func handleAppStateDidChange(notification: Notification?) {
+        debugPrint("[UnityPlayerUtils] handleAppStateDidChange notification?.name \(String(describing: notification?.name))")
         if !self._isUnityReady {
             return
         }
-
+        
         let unityAppController = self.ufw?.appController() as? UnityAppController
         let application = UIApplication.shared
-
+        
         if notification?.name == UIApplication.willResignActiveNotification {
             unityAppController?.applicationWillResignActive(application)
         } else if notification?.name == UIApplication.didEnterBackgroundNotification {
@@ -187,10 +192,11 @@ var sharedApplication: UIApplication?
             unityAppController?.applicationDidReceiveMemoryWarning(application)
         }
     }
-
-
+    
+    
     // Listener for app lifecycle eventa
     func listenAppState() {
+        debugPrint("[UnityPlayerUtils] listenAppState")
         for name in [
             UIApplication.didBecomeActiveNotification,
             UIApplication.didEnterBackgroundNotification,
@@ -208,71 +214,79 @@ var sharedApplication: UIApplication?
     }
     // Pause unity player
     func pause() {
+        debugPrint("[UnityPlayerUtils] pause")
         self.ufw?.pause(true)
         self._isUnityPaused = true
     }
-
+    
     // Resume unity player
     func resume() {
+        debugPrint("[UnityPlayerUtils] resume")
         self.ufw?.pause(false)
         self._isUnityPaused = false
     }
-
+    
     // Unoad unity player
     func unload() {
+        debugPrint("[UnityPlayerUtils] unload")
         self.ufw?.unloadApplication()
     }
-
+    
     func isUnityLoaded() -> Bool {
         return _isUnityLoaded
     }
-
+    
     func isUnityPaused() -> Bool {
         return _isUnityPaused
     }
-
+    
     // Quit unity player application
     func quit() {
+        debugPrint("[UnityPlayerUtils] quit")
         self.ufw?.quitApplication(0)
         self._isUnityLoaded = false
     }
-
+    
     // Post message to unity
     func postMessageToUnity(gameObject: String?, unityMethodName: String?, unityMessage: String?) {
+        debugPrint("[UnityPlayerUtils] postMessageToUnity \(String(describing: unityMethodName))")
         if self.unityIsInitiallized() {
             self.ufw?.sendMessageToGO(withName: gameObject, functionName: unityMethodName, message: unityMessage)
         }
     }
-
+    
     /// Handle incoming unity messages looping through all controllers and passing payload to
     /// the controller handler methods
     @objc
     func unityMessageHandlers(_ message: UnsafePointer<Int8>?) {
         for c in globalControllers {
             if let strMsg = message {
+                debugPrint("[UnityPlayerUtils] unityMessageHandlers \(String(describing: String(utf8String: strMsg)))")
                 c.handleMessage(message: String(utf8String: strMsg) ?? "")
             } else {
+                debugPrint("[UnityPlayerUtils] unityMessageHandlers null")
                 c.handleMessage(message: "")
             }
         }
     }
-
+    
     func unitySceneLoadedHandlers(name: UnsafePointer<Int8>?, buildIndex: UnsafePointer<Int32>?, isLoaded: UnsafePointer<Bool>?, isValid: UnsafePointer<Bool>?) {
+        debugPrint("[UnityPlayerUtils] unitySceneLoadedHandlers")
         if let sceneName = name,
            let bIndex = buildIndex,
            let loaded = isLoaded,
            let valid = isValid {
-
+            debugPrint("[UnityPlayerUtils] unitySceneLoadedHandlers \( String(describing: String(utf8String: sceneName)))")
             let loadedVal = Bool((Int(bitPattern: loaded) != 0))
             let validVal = Bool((Int(bitPattern: valid) != 0))
-
+            
             let addObject: Dictionary<String, Any> = [
                 "name": String(utf8String: sceneName) ?? "",
                 "buildIndex": Int(bitPattern: bIndex),
                 "isLoaded": loadedVal,
                 "isValid": validVal,
             ]
-
+            
             for c in globalControllers {
                 c.handleSceneChangeEvent(info: addObject)
             }
