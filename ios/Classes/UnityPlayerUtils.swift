@@ -295,7 +295,7 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
         }
     }
     
-    func newPrint(_ message: StaticString) {
+    func newPrint(_ message: String) {
         os_log("%{public}@", log: log, type: .default, message)
         for c in globalControllers {
             c.handleMessage(message: toJsonString(message))
