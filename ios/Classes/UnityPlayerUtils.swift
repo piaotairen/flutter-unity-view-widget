@@ -7,6 +7,7 @@
 
 import Foundation
 import UnityFramework
+import os.log
 
 private var unity_warmed_up = false
 // Hack to work around iOS SDK 4.3 linker problem
@@ -66,6 +67,7 @@ func GetUnityPlayerUtils() -> UnityPlayerUtils {
 
 var controller: UnityAppController?
 var sharedApplication: UIApplication?
+let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
 
 @objc protocol UnityEventListener: AnyObject {
     
@@ -292,13 +294,23 @@ var sharedApplication: UIApplication?
             }
         }
     }
-
-    func newPrint(_ message: String) {
-        debugPrint("\(message)")
-
+    
+    func newPrint(_ message: StaticString) {
+        os_log("%{public}@", log: log, type: .default, message)
         for c in globalControllers {
-            var json = "{\"scene\":\"\("null")\", \"method\":\"\("print")\", \"data\":\"\(message)\"}"
-            c.handleMessage(message: message)
+            c.handleMessage(message: toJsonString(message))
         }
+    }
+    
+    func toJsonString(_ message: String) -> String {
+        let jsonObject: [String: Any] = [
+            "scene": "null",
+            "method": "print",
+            "data": message
+        ]
+        if let jsonData = (try? JSONSerialization.data(withJSONObject: jsonObject, options: [])), let jsonString = String(data: jsonData, encoding: .utf8) {
+            return jsonString
+        }
+        return ""
     }
 }
