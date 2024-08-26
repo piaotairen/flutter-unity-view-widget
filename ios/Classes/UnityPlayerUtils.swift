@@ -166,6 +166,7 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
     public func unityDidUnload(_ notification: Notification!) {
         unregisterUnityListener()
         self.ufw = nil
+        removeAppStateListen()
         self._isUnityReady = false
         self._isUnityLoaded = false
         newPrint("[UnityPlayerUtils] unityDidUnload")
@@ -214,6 +215,12 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
                 object: nil)
         }
     }
+    
+    func removeAppStateListen() {
+        newPrint("[UnityPlayerUtils] removeAppStateListen")
+        NotificationCenter.default.removeObserver(self);
+    }
+    
     // Pause unity player
     func pause() {
         newPrint("[UnityPlayerUtils] pause")
@@ -297,7 +304,7 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
     
     func newPrint(_ message: String) {
         os_log("%{public}@", log: log, type: .default, message)
-        for c in globalControllers {
+        if let c = globalControllers.last {
             c.handleMessage(message: toJsonString(message))
         }
     }
