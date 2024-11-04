@@ -303,10 +303,10 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
     }
     
     func newPrint(_ message: String) {
-        os_log("%{public}@", log: log, type: .default, message)
-        if let c = globalControllers.last {
-            c.handleMessage(message: toJsonString(message))
-        }
+        // os_log("%{public}@", log: log, type: .default, message)
+        // if let c = globalControllers.last {
+        //     c.handleMessage(message: toJsonString(message))
+        // }
     }
     
     func toJsonString(_ message: String) -> String {
