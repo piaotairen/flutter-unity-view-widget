@@ -204,6 +204,10 @@ class FlutterUnityWidgetController(
 
     override fun onSceneLoaded(name: String, buildIndex: Int, isLoaded: Boolean, isValid: Boolean) {
         Handler(Looper.getMainLooper()).post {
+            // 设置 Unity 视图可见和不透明
+            UnityPlayerUtils.unityPlayer?.alpha = 1f
+            UnityPlayerUtils.unityPlayer?.visibility = View.VISIBLE
+
             val payload: MutableMap<String, Any> = HashMap()
             payload["name"] = name
             payload["buildIndex"] = buildIndex
@@ -287,6 +291,10 @@ class FlutterUnityWidgetController(
             if (UnityPlayerUtils.activity != null) {
                 UnityPlayerUtils.createUnityPlayer( this, object : OnCreateUnityViewCallback {
                     override fun onReady() {
+                        // 设置 Unity 视图透明和不可见
+                        UnityPlayerUtils.unityPlayer?.alpha = 0f
+                        UnityPlayerUtils.unityPlayer?.visibility = View.GONE
+
                         // attach unity to controller
                         attachToView()
 
