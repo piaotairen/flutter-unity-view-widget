@@ -83,6 +83,7 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
     
     func initUnity() {
         if (self.unityIsInitiallized()) {
+            setRootViewOpacity(opacity: 0.0)
             self.ufw?.showUnityWindow()
             return
         }
@@ -100,6 +101,7 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
             controller?.unitySceneLoadedHandler = self.unitySceneLoadedHandlers
             self.ufw?.appController()?.window?.windowLevel = UIWindow.Level(UIWindow.Level.normal.rawValue - 1)
         }
+        setRootViewOpacity(opacity: 0.0)
         _isUnityLoaded = true
         newPrint("[UnityPlayerUtils] initUnity")
     }
@@ -238,7 +240,12 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
     // Unoad unity player
     func unload() {
         newPrint("[UnityPlayerUtils] unload")
+        setRootViewOpacity(opacity: 0.0)
         self.ufw?.unloadApplication()
+    }
+    
+    func setRootViewOpacity(opacity: CGFloat) {
+        self.ufw.appController().rootView.alpha = opacity
     }
     
     func isUnityLoaded() -> Bool {
@@ -286,6 +293,7 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
            let loaded = isLoaded,
            let valid = isValid {
             newPrint("[UnityPlayerUtils] unitySceneLoadedHandlers \( String(describing: String(utf8String: sceneName)))")
+            setRootViewOpacity(opacity: 1.0)
             let loadedVal = Bool((Int(bitPattern: loaded) != 0))
             let validVal = Bool((Int(bitPattern: valid) != 0))
             
@@ -303,10 +311,10 @@ let log = OSLog(subsystem: "com.tyrell.eve", category: "unity")
     }
     
     func newPrint(_ message: String) {
-        // os_log("%{public}@", log: log, type: .default, message)
-        // if let c = globalControllers.last {
-        //     c.handleMessage(message: toJsonString(message))
-        // }
+        //         os_log("%{public}@", log: log, type: .default, message)
+        //         if let c = globalControllers.last {
+        //             c.handleMessage(message: toJsonString(message))
+        //         }
     }
     
     func toJsonString(_ message: String) -> String {
