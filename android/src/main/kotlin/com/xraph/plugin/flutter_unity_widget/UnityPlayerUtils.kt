@@ -50,9 +50,11 @@ class UnityPlayerUtils {
             if (activity == null) {
                 throw java.lang.Exception("Unity activity is null")
             }
+            activity?.window?.decorView?.alpha = 0f
 
             if (unityPlayer != null) {
                 unityLoaded = true
+                unityPlayer!!.alpha = 0f
                 unityPlayer!!.bringToFront()
                 unityPlayer!!.requestLayout()
                 unityPlayer!!.invalidate()
@@ -63,6 +65,7 @@ class UnityPlayerUtils {
 
             try {
                 unityPlayer = CustomUnityPlayer(activity!!, ule)
+                unityPlayer?.alpha = 0f
 
                 // Assign mUnityPlayer in the Activity, see FlutterUnityActivity.kt for more details
                 if(activity is FlutterUnityActivity) {
@@ -119,8 +122,10 @@ class UnityPlayerUtils {
         }
 
         fun unload() {
+            activity?.window?.decorView?.alpha = 0f
             try {
                 if (unityPlayer != null) {
+                    unityPlayer!!.alpha = 0f
                     unityPlayer!!.unload()
                     unityLoaded = false
                 }
@@ -145,6 +150,8 @@ class UnityPlayerUtils {
          */
         @JvmStatic
         fun onUnitySceneLoaded(name: String, buildIndex: Int, isLoaded: Boolean, isValid: Boolean) {
+            activity?.window?.decorView?.alpha = 1f
+            unityPlayer?.alpha = 1f
             for (listener in mUnityEventListeners) {
                 try {
                     listener.onSceneLoaded(name, buildIndex, isLoaded, isValid)
