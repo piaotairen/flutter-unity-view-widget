@@ -55,7 +55,7 @@ class UnityPlayerUtils {
             if (unityPlayer != null) {
                 unityLoaded = true
                 unityPlayer!!.alpha = 0f
-                unityPlayer!!.visibility = View.GONE
+                unityPlayer!!.visibility = View.INVISIBLE
                 unityPlayer!!.bringToFront()
                 unityPlayer!!.requestLayout()
                 unityPlayer!!.invalidate()
@@ -67,7 +67,7 @@ class UnityPlayerUtils {
             try {
                 unityPlayer = CustomUnityPlayer(activity!!, ule)
                 unityPlayer?.alpha = 0f
-                unityPlayer?.visibility = View.GONE
+                unityPlayer?.visibility = View.INVISIBLE
 
                 // Assign mUnityPlayer in the Activity, see FlutterUnityActivity.kt for more details
                 if(activity is FlutterUnityActivity) {
@@ -124,11 +124,8 @@ class UnityPlayerUtils {
         }
 
         fun unload() {
-            activity?.window?.decorView?.alpha = 0f
-            unityPlayer?.visibility = View.GONE
             try {
                 if (unityPlayer != null) {
-                    unityPlayer!!.alpha = 0f
                     unityPlayer!!.unload()
                     unityLoaded = false
                 }
@@ -196,6 +193,9 @@ class UnityPlayerUtils {
         }
 
         fun removePlayer(controller: FlutterUnityWidgetController) {
+            activity?.window?.decorView?.alpha = 0f
+            unityPlayer?.alpha = 0f
+            unityPlayer?.visibility = View.INVISIBLE
             if (unityPlayer!!.parent == controller.view) {
                 if (controllers.isEmpty()) {
                     (controller.view as FrameLayout).removeView(unityPlayer)
