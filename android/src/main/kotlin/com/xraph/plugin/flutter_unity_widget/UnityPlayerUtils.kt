@@ -42,6 +42,11 @@ class UnityPlayerUtils {
             }
         }
 
+        fun setPlayer(visible: Boolean) {
+            unityPlayer?.alpha = if (visible) 1.0f else 0.0f
+            unityPlayer?.visibility = if (visible) View.VISIBLE else View.INVISIBLE
+        }
+        
         /**
          * Create a new unity player with callback
          */
@@ -50,12 +55,10 @@ class UnityPlayerUtils {
             if (activity == null) {
                 throw java.lang.Exception("Unity activity is null")
             }
-//            activity?.window?.decorView?.alpha = 0f
 
             if (unityPlayer != null) {
+                setPlayer(false)
                 unityLoaded = true
-                unityPlayer!!.alpha = 0f
-                unityPlayer!!.visibility = View.GONE
                 unityPlayer!!.bringToFront()
                 unityPlayer!!.requestLayout()
                 unityPlayer!!.invalidate()
@@ -66,8 +69,7 @@ class UnityPlayerUtils {
 
             try {
                 unityPlayer = CustomUnityPlayer(activity!!, ule)
-                unityPlayer?.alpha = 0f
-                unityPlayer?.visibility = View.GONE
+                setPlayer(false)
 
                 // Assign mUnityPlayer in the Activity, see FlutterUnityActivity.kt for more details
                 if(activity is FlutterUnityActivity) {
@@ -75,9 +77,9 @@ class UnityPlayerUtils {
                 } else if(activity is IFlutterUnityActivity) {
                     (activity!! as IFlutterUnityActivity)?.setUnityPlayer(unityPlayer as java.lang.Object?);
                 } else {
-                     Log.e(LOG_TAG, "Could not set mUnityPlayer in activity");
+                    Log.e(LOG_TAG, "Could not set mUnityPlayer in activity");
                 }
-                
+
 
                 // unityPlayer!!.z = (-1).toFloat()
                 // addUnityViewToBackground(activity!!)
@@ -150,9 +152,7 @@ class UnityPlayerUtils {
          */
         @JvmStatic
         fun onUnitySceneLoaded(name: String, buildIndex: Int, isLoaded: Boolean, isValid: Boolean) {
-//            activity?.window?.decorView?.alpha = 1f
-            unityPlayer?.alpha = 1f
-            unityPlayer?.visibility = View.VISIBLE
+            setPlayer(true)
             for (listener in mUnityEventListeners) {
                 try {
                     listener.onSceneLoaded(name, buildIndex, isLoaded, isValid)
@@ -193,9 +193,7 @@ class UnityPlayerUtils {
         }
 
         fun removePlayer(controller: FlutterUnityWidgetController) {
-//            activity?.window?.decorView?.alpha = 0f
-            unityPlayer?.alpha = 0f
-            unityPlayer?.visibility = View.GONE
+            setPlayer(false)
             if (unityPlayer!!.parent == controller.view) {
                 if (controllers.isEmpty()) {
                     (controller.view as FrameLayout).removeView(unityPlayer)
@@ -212,7 +210,7 @@ class UnityPlayerUtils {
         }
 
         fun addUnityViewToGroup(group: ViewGroup) {
-             val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
+            val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
 //             val layoutParams = ViewGroup.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT)
 //            val layoutParams = ViewGroup.LayoutParams(570, 770)
             group.addView(unityPlayer, layoutParams)
