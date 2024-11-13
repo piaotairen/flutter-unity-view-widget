@@ -50,12 +50,12 @@ class UnityPlayerUtils {
             if (activity == null) {
                 throw java.lang.Exception("Unity activity is null")
             }
-            activity?.window?.decorView?.alpha = 0f
+//            activity?.window?.decorView?.alpha = 0f
 
             if (unityPlayer != null) {
                 unityLoaded = true
-                unityPlayer!!.alpha = 0f
-                unityPlayer!!.visibility = View.INVISIBLE
+//                unityPlayer!!.alpha = 0f
+                unityPlayer!!.visibility = View.GONE
                 unityPlayer!!.bringToFront()
                 unityPlayer!!.requestLayout()
                 unityPlayer!!.invalidate()
@@ -66,8 +66,8 @@ class UnityPlayerUtils {
 
             try {
                 unityPlayer = CustomUnityPlayer(activity!!, ule)
-                unityPlayer?.alpha = 0f
-                unityPlayer?.visibility = View.INVISIBLE
+//                unityPlayer?.alpha = 0f
+                unityPlayer?.visibility = View.GONE
 
                 // Assign mUnityPlayer in the Activity, see FlutterUnityActivity.kt for more details
                 if(activity is FlutterUnityActivity) {
@@ -150,8 +150,10 @@ class UnityPlayerUtils {
          */
         @JvmStatic
         fun onUnitySceneLoaded(name: String, buildIndex: Int, isLoaded: Boolean, isValid: Boolean) {
-            activity?.window?.decorView?.alpha = 1f
-            unityPlayer?.alpha = 1f
+//            activity?.window?.decorView?.alpha = 1f
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+//                unityPlayer?.alpha = 1f
+//            }
             unityPlayer?.visibility = View.VISIBLE
             for (listener in mUnityEventListeners) {
                 try {
@@ -193,9 +195,11 @@ class UnityPlayerUtils {
         }
 
         fun removePlayer(controller: FlutterUnityWidgetController) {
-            activity?.window?.decorView?.alpha = 0f
-            unityPlayer?.alpha = 0f
-            unityPlayer?.visibility = View.INVISIBLE
+//            activity?.window?.decorView?.alpha = 0f
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
+//                unityPlayer?.alpha = 0f
+//            }
+            unityPlayer?.visibility = View.GONE
             if (unityPlayer!!.parent == controller.view) {
                 if (controllers.isEmpty()) {
                     (controller.view as FrameLayout).removeView(unityPlayer)
